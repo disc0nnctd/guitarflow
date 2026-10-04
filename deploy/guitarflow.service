@@ -1,0 +1,14 @@
+[Unit]
+Description=GuitarFlow static app for Tailscale HTTPS
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/notdc/projects/guitarflow
+ExecStart=/usr/bin/python3 -m http.server 3131 --bind 127.0.0.1 --directory /home/notdc/projects/guitarflow/dist
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

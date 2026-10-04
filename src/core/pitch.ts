@@ -69,7 +69,7 @@ function unknown(rms = 0): PitchEstimate {
 /**
  * Bounded YIN difference analysis for one guitar note (roughly E2–E5).
  * A short FIR low-pass precedes decimation. At most 2048 reduced samples
- * and ~60 lag candidates are examined, independent of the input length.
+ * and ~110 lag candidates are examined, independent of the input length.
  * A periodic chord or harmonic can still confuse this monophonic estimator;
  * the result is evidence of a pitch, not proof of the played string or chord.
  */
@@ -84,7 +84,7 @@ export function estimatePitch(
     samples.length < 128
   )
     return unknown();
-  const stride = Math.max(1, Math.floor(sampleRate / 4000));
+  const stride = Math.max(1, Math.floor(sampleRate / 8000));
   const rate = sampleRate / stride;
   // Bound input consumption too; take the most recent analysis window.
   const count = Math.min(samples.length, stride * 2048);
@@ -163,7 +163,58 @@ export function estimatePitch(
     curvature === 0
       ? 0
       : Math.max(-1, Math.min(1, (left - right) / (2 * curvature)));
-  const frequency = rate / (candidate + correction);
+  let frequency = rate / (candidate + correction);
+  // A strong second harmonic can satisfy YIN before the full note period.
+  // Compare fractional delays in the original audio: integer reduced lags
+  // alone can falsely favor an octave below an accurately tuned pure tone.
+  // Keep the first period unless doubling it explains substantially more
+  // signal; amplitude, noise and decay alone are not octave evidence.
+  if (frequency / 2 >= 75) {
+    const delay = sampleRate / frequency;
+    const comparisonLength = count - Math.ceil(delay * 2.12) - 1;
+    const residual = (period: number) => {
+      let differenceEnergy = 0;
+      let signalEnergy = 0;
+      for (let offset = 0; offset < comparisonLength; offset += stride) {
+        const index = start + offset;
+        const delayedIndex = index + period;
+        const lower = Math.floor(delayedIndex);
+        const fraction = delayedIndex - lower;
+        const a = samples[index] - mean;
+        const b =
+          samples[lower] * (1 - fraction) +
+          samples[lower + 1] * fraction -
+          mean;
+        differenceEnergy += (a - b) ** 2;
+        signalEnergy += a * a + b * b;
+      }
+      return signalEnergy > 0 ? differenceEnergy / signalEnergy : 1;
+    };
+    const bestPeriod = (initial: number) => {
+      let period = initial;
+      let score = residual(period);
+      for (const step of [0.002, 0.0004]) {
+        const centerPeriod = period;
+        for (let offset = -10; offset <= 10; offset++) {
+          const trial = centerPeriod * (1 + offset * step);
+          const value = residual(trial);
+          if (value < score) {
+            score = value;
+            period = trial;
+          }
+        }
+      }
+      return { period, score };
+    };
+    const first = bestPeriod(delay);
+    const doubled = bestPeriod(first.period * 2);
+    if (
+      doubled.score < first.score * 0.5 &&
+      first.score - doubled.score > 0.008
+    ) {
+      frequency = sampleRate / doubled.period;
+    }
+  }
   const fractionalMidi = 69 + 12 * Math.log2(frequency / 440);
   const midi = Math.round(fractionalMidi);
   if (midi < 40 || midi > 76) return unknown(rms);

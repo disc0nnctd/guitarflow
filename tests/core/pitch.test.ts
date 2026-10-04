@@ -72,6 +72,60 @@ describe("monophonic guitar pitch", () => {
       estimatePitch(pluck(45, 0, 44100, [0, 0.7, 0.6, 0.1]), 44100).midi,
     ).toBe(45);
   });
+  it.each([44100, 48000, 96000])(
+    "recognizes high E and B string notes with a dominant second harmonic at %s Hz",
+    (sampleRate) => {
+      // A near-absent fundamental previously caused E4 to be reported as E5.
+      // Fretted high-string notes also exposed reduced-lag resolution errors.
+      for (let midi = 59; midi <= 76; midi++) {
+        for (const cents of [-25, 0, 25]) {
+          const signal = pluck(midi, cents, sampleRate, [0.02, 1, 0.1, 0.3]);
+          const result = estimatePitch(signal, sampleRate);
+          expect(result.midi, `MIDI ${midi}, ${cents} cents`).toBe(midi);
+          expect(Math.abs(result.cents! - cents)).toBeLessThan(10);
+        }
+      }
+    },
+  );
+  it.each([44100, 48000, 96000])(
+    "does not mistake E5 for E4 when comparing harmonic periods at %s Hz",
+    (sampleRate) => {
+      for (const cents of [-35, 0, 35]) {
+        for (const harmonics of [[1], [1, 0.5, 0.25, 0.1]]) {
+          const result = estimatePitch(
+            pluck(76, cents, sampleRate, harmonics),
+            sampleRate,
+          );
+          expect(result.midi).toBe(76);
+          expect(Math.abs(result.cents! - cents)).toBeLessThan(10);
+        }
+      }
+    },
+  );
+  it("recognizes a high-E pluck in the live 16384-sample analyser window", () => {
+    const sampleRate = 48000;
+    const harmonics = [0.02, 1, 0.1, 0.3];
+    const signal = Float32Array.from({ length: 16384 }, (_, i) => {
+      const t = i / sampleRate;
+      return (
+        0.05 *
+        Math.exp(-t * 5) *
+        harmonics.reduce(
+          (sum, amplitude, index) =>
+            sum +
+            amplitude *
+              Math.sin(
+                2 * Math.PI * frequencyOf(64) * (index + 1) * t + index * 0.3,
+              ),
+          0,
+        )
+      );
+    });
+    const result = estimatePitch(signal, sampleRate);
+    expect(result.midi).toBe(64);
+    expect(result.confidence).toBeGreaterThan(0.9);
+    expect(Math.abs(result.cents!)).toBeLessThan(10);
+  });
   it("rejects silence, DC, broadband noise, and invalid inputs", () => {
     let seed = 22;
     const noise = Float32Array.from({ length: 8192 }, () => {

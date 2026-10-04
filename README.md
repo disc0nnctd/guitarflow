@@ -32,6 +32,28 @@ npm run preview
 
 The production preview opens at **http://localhost:4180**.
 
+## Tailscale HTTPS deployment
+
+Open **https://dcmini-1.tail1e3236.ts.net:3131/** from a device connected
+to your Tailscale network. Allow microphone permission when listening.
+The existing private HTTPS proxy forwards to the GuitarFlow static server
+on loopback port 3131. Other Tailscale routes remain unchanged.
+
+The server runs as the user service `guitarflow.service`, linked to
+`deploy/guitarflow.service`. Install or restart it on this machine with:
+
+```bash
+npm run build
+systemctl --user link /home/notdc/projects/guitarflow/deploy/guitarflow.service
+systemctl --user enable --now guitarflow.service
+systemctl --user status guitarflow.service
+```
+
+Rebuild with `npm run build` after source changes; the server reads the updated
+static assets directly. The deployment uses a pre-existing Tailscale Serve
+route, so no administrator change to Tailscale was needed. See the
+[Tailscale Serve reference](https://tailscale.com/docs/reference/tailscale-cli/serve).
+
 ## First practice session
 
 1. Try a preset or the demo recording to explore without microphone access.

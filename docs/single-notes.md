@@ -46,3 +46,18 @@ Existing chord, rhythm, upload and transport scenarios remain covered.
 This validates behavior with synthetic audio. It does not establish accuracy
 on a physical guitar or noisy room recordings. Those evaluations remain in
 the research work tracked by Beads.
+
+## Higher-string detection update
+
+A user reported that most B-string and high-E-string notes were not recognized.
+Synthetic investigation reproduced an E4 note being mistaken for E5 when its
+second harmonic dominated, plus a high-note resolution error after downsampling.
+The detector now retains a higher reduced sample rate and compares fractional
+periods in the original audio before accepting an octave correction. Additional
+tests cover B3–E5, tuning offsets, several input sample rates and safeguards
+against incorrectly lowering a true E5 note. Quiet-input thresholds are unchanged.
+
+The updated full suite passes 67 unit tests and 25 browser scenarios. A browser
+check through the actual Tailscale HTTPS endpoint also recognizes a synthetic
+harmonic-heavy E4 MediaStream and advances its target. These fixes address
+reproduced failures; confirmation on the user's guitar and phone is still needed.
