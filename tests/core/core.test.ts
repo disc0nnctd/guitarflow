@@ -124,7 +124,12 @@ describe("pattern and arrangement contracts", () => {
       getCompatibleArrangements(PRESET_PATTERNS[0], ["G", "C", "D"]).map(
         (a) => a.id,
       ),
-    ).toEqual(["open-road"]);
+    ).toEqual(expect.arrayContaining(["open-road"]));
+    expect(
+      getCompatibleArrangements(PRESET_PATTERNS[0], ["G", "C", "D"]).every(
+        (a) => a.chords.every((event) => ["G", "C", "D"].includes(event.chord)),
+      ),
+    ).toBe(true);
     expect(ARRANGEMENTS.length).toBeGreaterThanOrEqual(5);
     expect(Object.values(CHORD_FINGERINGS).every((f) => f.length === 6)).toBe(
       true,

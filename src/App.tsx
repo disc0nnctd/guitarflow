@@ -59,12 +59,24 @@ export default function App() {
   const [saved, setSaved] = useState("");
   const [known, setKnown] = useState<ChordName[]>([...CHORD_NAMES]);
   const [selectedId, setSelectedId] = useState(ARRANGEMENTS[0].id);
+  const [libraryQuery, setLibraryQuery] = useState("");
+  const [libraryKind, setLibraryKind] = useState("all");
   const [loop, setLoop] = useState(true);
   const [muted, setMuted] = useState(false);
   const audio = useAudio();
   const selected =
     ARRANGEMENTS.find((a) => a.id === selectedId) ?? ARRANGEMENTS[0];
   const compatible = getCompatibleArrangements(pattern, known);
+  const visibleArrangements = compatible.filter((arrangement) => {
+    const matchesKind =
+      libraryKind === "all" ||
+      (libraryKind === "songs" ? !!arrangement.song : !arrangement.song);
+    const searchText = `${arrangement.title} ${arrangement.song?.artist ?? ""}`;
+    return (
+      matchesKind &&
+      searchText.toLowerCase().includes(libraryQuery.trim().toLowerCase())
+    );
+  });
   const length = selected.chords.reduce((n, c) => n + c.beats, 0);
   const transport = useTransport(bpm, loop, length, muted, pattern);
   const position = getPlaybackPosition(
@@ -233,7 +245,8 @@ export default function App() {
               <div className="eyebrow">01 / PLAY</div>
               <h2 id="practice-heading">{selected.title}</h2>
               <p>
-                {selected.subtitle} · Key of {selected.key} · Standard tuning
+                {selected.subtitle} · Key of {selected.key} · Standard tuning ·{" "}
+                {selected.capo ? `Capo ${selected.capo}` : "No capo"}
               </p>
             </div>
             <span className="badge">{selected.difficulty}</span>
@@ -301,6 +314,23 @@ export default function App() {
               <ChordDiagram chord={position.next.chord} />
             </div>
           </div>
+          {selected.song && (
+            <div className="song-details">
+              <p>
+                <strong>
+                  {selected.song.artist} · Simplified acoustic practice loop
+                </strong>
+              </p>
+              <p>{selected.song.practiceNotes}</p>
+              <a
+                href={selected.song.lessonUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open song lesson (new tab)
+              </a>
+            </div>
+          )}
           <div className="progression" aria-label="Chord progression">
             {selected.chords.map((c, i) => (
               <span
@@ -666,12 +696,14 @@ export default function App() {
               <button
                 className="icon-button"
                 aria-label="Shuffle compatible exercise"
-                disabled={compatible.length === 0}
+                disabled={visibleArrangements.length === 0}
                 onClick={() => {
-                  const alternatives = compatible.filter(
+                  const alternatives = visibleArrangements.filter(
                     (a) => a.id !== selectedId,
                   );
-                  const pool = alternatives.length ? alternatives : compatible;
+                  const pool = alternatives.length
+                    ? alternatives
+                    : visibleArrangements;
                   if (pool.length)
                     choose(pool[Math.floor(Math.random() * pool.length)].id);
                 }}
@@ -680,9 +712,29 @@ export default function App() {
               </button>
             </div>
             <p>
-              Original exercises to keep your practice simple. Choose the chords
-              you know.
+              Familiar acoustic songs and original exercises. Song loops use
+              simplified chords and practice timing. Choose the chords you know.
             </p>
+            <div className="library-controls">
+              <label htmlFor="library-search">Search title or artist</label>
+              <input
+                id="library-search"
+                type="search"
+                value={libraryQuery}
+                onChange={(event) => setLibraryQuery(event.target.value)}
+                placeholder="Try Nirvana or Pink Floyd"
+              />
+              <label htmlFor="library-kind">Show</label>
+              <select
+                id="library-kind"
+                value={libraryKind}
+                onChange={(event) => setLibraryKind(event.target.value)}
+              >
+                <option value="all">Songs and exercises</option>
+                <option value="songs">Popular songs</option>
+                <option value="originals">Original exercises</option>
+              </select>
+            </div>
             <fieldset className="known-chords">
               <legend>Known chords</legend>
               {CHORD_NAMES.map((c) => (
@@ -705,13 +757,14 @@ export default function App() {
               ))}
             </fieldset>
             <div className="exercise-list">
-              {compatible.length === 0 ? (
+              {visibleArrangements.length === 0 ? (
                 <div className="empty">
-                  No matching exercises yet. Select more known chords or try a
-                  pattern with at least one strum.
+                  {compatible.length === 0
+                    ? "No matching exercises yet. Select more known chords."
+                    : "No songs or exercises match this search. Try another title, artist or library filter."}
                 </div>
               ) : (
-                compatible.map((a) => (
+                visibleArrangements.map((a) => (
                   <button
                     key={a.id}
                     aria-pressed={a.id === selectedId}
@@ -724,6 +777,11 @@ export default function App() {
                     <span>
                       <strong>{a.title}</strong>
                       <small>
+                        {a.song && (
+                          <span className="song-artist">
+                            {a.song.artist} · Simplified loop
+                          </span>
+                        )}
                         {a.chords.map((c) => c.chord).join(" · ")}
                         <span>{a.tags.join(" / ")}</span>
                       </small>
@@ -740,7 +798,8 @@ export default function App() {
             <div className="library-footer">
               <Guitar size={17} />
               <span>
-                Original progressions · No copyrighted song recordings
+                Song practice loops and original progressions · Audio stays
+                local
               </span>
             </div>
           </section>

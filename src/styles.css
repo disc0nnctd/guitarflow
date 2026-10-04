@@ -652,6 +652,54 @@ h2 {
   flex-direction: column;
   gap: 8px;
 }
+.library-controls {
+  display: grid;
+  gap: 8px;
+  margin: 20px 0;
+}
+.library-controls label {
+  font-size: 12px;
+  color: var(--muted);
+}
+.library-controls input,
+.library-controls select {
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #252a25;
+  color: #eeeee9;
+  font: inherit;
+}
+.song-details {
+  margin-top: 20px;
+  padding: 16px;
+  border-left: 3px solid var(--amber);
+  background: #222722;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.song-details p {
+  margin: 0 0 8px;
+  color: var(--muted);
+}
+.song-details strong {
+  color: #eeeee9;
+}
+.song-details a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--amber);
+  text-decoration: underline;
+}
+.exercise small .song-artist {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
 .exercise {
   width: 100%;
   text-align: left;

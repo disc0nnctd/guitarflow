@@ -43,6 +43,12 @@ The production preview opens at **http://localhost:4180**.
 5. Start practice, follow the current/next chord displays, and use pause,
    restart and tempo controls as needed.
 
+The library now includes acoustic-friendly songs by Nirvana, Pink Floyd,
+Oasis, the Cranberries, Green Day, Tracy Chapman and Bob Dylan. Search by title
+or artist, choose **Popular songs**, and select a loop. Artist and lesson links
+appear beside the selected song's adaptation notes. See the
+[song catalog](docs/acoustic-songs.md) for the included titles and sources.
+
 Saved patterns stay in this browser's local storage. Raw microphone/upload
 audio is used in memory and is not sent to a server. Clearing browser storage
 removes saved patterns.
@@ -66,8 +72,11 @@ removes saved patterns.
 - Chord listening is experimental note-energy matching for a small open-chord
   vocabulary. It can return unknown, especially for noise and partial chords;
   it does not determine when the arrangement advances.
-- The library contains original practice progressions, not a licensed popular
-  song catalogue. Random selection is limited to compatible exercises.
+- The library combines original exercises with short, simplified popular-song
+  chord loops. Equal-length practice bars are not complete song arrangements
+  or recording-synchronized charts. Song-specific notes explain omitted riffs,
+  simplified voicings and transposed no-capo adaptations. Lesson links provide
+  a route to learning the song's original playing style.
 - Synthetic test audio validates mechanics. Accuracy on real guitar recordings
   and the planned Basic Pitch comparison remain unverified.
 

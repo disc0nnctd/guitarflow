@@ -29,6 +29,11 @@ export interface Arrangement {
   difficulty: "Beginner";
   tags: string[];
   provenance: string;
+  song?: {
+    artist: string;
+    lessonUrl: string;
+    practiceNotes: string;
+  };
   chords: { chord: ChordName; beats: number; section: string }[];
 }
 export interface RhythmAnalysis {
