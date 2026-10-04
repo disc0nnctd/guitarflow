@@ -1,5 +1,17 @@
+# Private recordings and generated experiment artifacts
+data/raw/
+data/private/
+artifacts/
+recordings/
 
-# Beads / Dolt files (added by bd init)
-.dolt/
-*.db
-.beads-credential-key
+# Local environments and credentials
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+node_modules/
+dist/
+.DS_Store
