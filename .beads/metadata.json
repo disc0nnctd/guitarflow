@@ -2,6 +2,7 @@
   "database": "dolt",
   "backend": "dolt",
   "dolt_mode": "server",
+  "dolt_server_port": 3319,
   "dolt_database": "gf",
   "project_id": "0147ec8f-0b3f-414c-b9c5-d4d165d8162f",
   "global_dolt_database": "beads_global"
