@@ -3,9 +3,11 @@
 A personal guitar assistant: record a strumming pattern, choose a compatible
 song arrangement, and receive current/next chord cues while playing.
 
-Version 0.1 is a browser practice app. Record or upload a short strumming
+Version 0.2 is a browser practice app. Record or upload a short strumming
 pattern, correct its timing grid, and practice original progressions with
 current/next chord cues. Audio processing runs on your device.
+Single-note practice listens for the expected pitch and octave before advancing
+to the next note. An interactive guitar neck shows target and heard positions.
 
 ## Run locally
 
@@ -19,6 +21,9 @@ npm run dev
 Open **http://localhost:5180**. Microphone access requires localhost or HTTPS.
 Grant microphone permission when recording or enabling experimental chord
 listening. Use headphones so clicks do not enter your recording.
+For single notes, choose **Listen to single notes**, then pluck one string at
+a time. Try open strings, an original melody, repeated notes, or click a fret
+to select a target. Mute briefly between repeated notes.
 
 ```bash
 npm run build
@@ -44,6 +49,14 @@ removes saved patterns.
 
 ## What this version can and cannot do
 
+- Single-note listening estimates pitch, octave and tuning from microphone
+  audio using a local monophonic detector. It waits for a confident correct
+  note held briefly within 35 cents of the target. Repeated notes require a
+  release or different pitch before another match. Supported detection range:
+  E2–E5 in standard tuning.
+- The neck shows frets 0–12 and all possible positions for a pitch. Audio does
+  not identify which physical string or fret was used. Use one string at a
+  time; chords, noise and strong harmonics can confuse single-note detection.
 - Chord cues follow the chosen tempo and arrangement durations. Missing a strum
   does not skip a chord. The rhythm guide clicks follow the selected pattern
   after the count-in. Switching away from the tab pauses practice. The app does
@@ -72,6 +85,8 @@ Playwright browser with `npx playwright install chromium`, or set `CHROME_PATH`
 to an installed Chrome executable. Screenshots and test traces are written to
 ignored `artifacts/` directories. See [release evidence](docs/version-1.md)
 for the scenarios checked and limitations.
+See [single-note release evidence](docs/single-notes.md) for the new detector,
+practice follow-up and neck checks.
 
 ## Project documents
 

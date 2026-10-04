@@ -19,6 +19,7 @@ export function useTransport(
   const ctx = useRef<AudioContext | null>(null);
   const saved = useRef(0);
   const origin = useRef(0);
+  const scheduledGeneration = useRef(-1);
   const oscillators = useRef<OscillatorNode[]>([]);
   const muteRef = useRef(muted);
   muteRef.current = muted;
@@ -88,6 +89,13 @@ export function useTransport(
   };
   useEffect(() => {
     if (!playing) return;
+    // React may commit after the provisional start time under load. Anchor a
+    // new session when its scheduler is ready so the first count-in survives.
+    if (ctx.current && scheduledGeneration.current !== generation) {
+      scheduledGeneration.current = generation;
+      origin.current =
+        ctx.current.currentTime + 0.05 - (saved.current * 60) / bpm;
+    }
     let cursor = Math.max(
       saved.current,
       ctx.current

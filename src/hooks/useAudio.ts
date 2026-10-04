@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { analyzeRhythm, estimateChord } from "../core/audio";
 import { closeAudioContext } from "../core/audio-context";
+import { estimatePitch, type PitchEstimate } from "../core/pitch";
 import type { ChordEstimate, RhythmAnalysis } from "../core/types";
 const CAPTURE_PROCESSOR = `class Capture extends AudioWorkletProcessor {
  constructor(options) { super(); this.start = options.processorOptions.start; this.end = this.start + options.processorOptions.length; this.done = false; }
@@ -11,9 +12,17 @@ export function useAudio() {
   const [analyzing, setAnalyzing] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
+  const [errorMode, setErrorMode] = useState<
+    "record" | "listen" | "notes" | "upload" | null
+  >(null);
   const [result, setResult] = useState<RhythmAnalysis | null>(null);
   const [listening, setListening] = useState(false);
   const [estimate, setEstimate] = useState<ChordEstimate | null>(null);
+  const [noteEstimate, setNoteEstimate] = useState<PitchEstimate | null>(null);
+  const [listeningMode, setListeningMode] = useState<"chords" | "notes" | null>(
+    null,
+  );
+  const [requesting, setRequesting] = useState(false);
   const cleanup = useRef<(() => void) | null>(null);
   const token = useRef(0);
   const stop = () => {
@@ -22,12 +31,17 @@ export function useAudio() {
     cleanup.current = null;
     setRecording(false);
     setListening(false);
+    setListeningMode(null);
+    setRequesting(false);
+    setEstimate(null);
+    setNoteEstimate(null);
     setAnalyzing(false);
     setStatus("");
   };
   const clear = () => {
     stop();
     setError("");
+    setErrorMode(null);
     setResult(null);
     setEstimate(null);
   };
@@ -38,13 +52,17 @@ export function useAudio() {
     },
     [],
   );
-  const mic = async (bpm: number, mode: "record" | "listen") => {
+  const mic = async (bpm: number, mode: "record" | "listen" | "notes") => {
     clear();
     const session = token.current;
     let ctx: AudioContext | null = null;
     let stream: MediaStream | null = null;
     setStatus("Requesting microphone…");
     setRecording(mode === "record");
+    setRequesting(true);
+    setListeningMode(
+      mode === "notes" ? "notes" : mode === "listen" ? "chords" : null,
+    );
     try {
       if (!navigator.mediaDevices?.getUserMedia)
         throw new Error(
@@ -82,7 +100,7 @@ export function useAudio() {
         stream?.getTracks().forEach((t) => t.stop());
         closeAudioContext(context);
       };
-      if (mode === "listen") {
+      if (mode === "listen" || mode === "notes") {
         const analyser = context.createAnalyser();
         analyser.fftSize = Math.min(
           32768,
@@ -90,12 +108,18 @@ export function useAudio() {
         );
         source.connect(analyser);
         setListening(true);
+        setRequesting(false);
         setStatus("");
-        timer = setInterval(() => {
-          const data = new Float32Array(analyser.fftSize);
-          analyser.getFloatTimeDomainData(data);
-          setEstimate(estimateChord(data, context.sampleRate));
-        }, 300);
+        timer = setInterval(
+          () => {
+            const data = new Float32Array(analyser.fftSize);
+            analyser.getFloatTimeDomainData(data);
+            if (mode === "notes")
+              setNoteEstimate(estimatePitch(data, context.sampleRate));
+            else setEstimate(estimateChord(data, context.sampleRate));
+          },
+          mode === "notes" ? 100 : 300,
+        );
         return;
       }
       if (!context.audioWorklet)
@@ -136,6 +160,7 @@ export function useAudio() {
           try {
             setResult(analyzeRhythm(samples, context.sampleRate, bpm));
           } catch (e) {
+            setErrorMode("record");
             setError(
               e instanceof Error
                 ? e.message
@@ -147,6 +172,7 @@ export function useAudio() {
       };
       source.connect(node);
       node.connect(context.destination);
+      setRequesting(false);
       timer = setInterval(() => {
         const remaining = startTime - context.currentTime;
         setStatus(
@@ -160,6 +186,7 @@ export function useAudio() {
       closeAudioContext(ctx);
       if (token.current !== session) return;
       stop();
+      setErrorMode(mode);
       setError(
         e instanceof Error
           ? `${e.message} Allow microphone access in your browser, then retry.`
@@ -189,12 +216,14 @@ export function useAudio() {
       }
       setResult(analyzeRhythm(mono, audio.sampleRate, bpm));
     } catch (e) {
-      if (token.current === session)
+      if (token.current === session) {
+        setErrorMode("upload");
         setError(
           e instanceof Error
             ? e.message
             : "Unsupported audio file. Try WAV or MP3.",
         );
+      }
     } finally {
       if (ctx) await ctx.close();
       if (token.current === session) {
@@ -208,10 +237,14 @@ export function useAudio() {
     analyzing,
     status,
     error,
+    errorMode,
     result,
     setResult,
     listening,
     estimate,
+    noteEstimate,
+    listeningMode,
+    requesting,
     stop,
     clear,
     mic,

@@ -1,0 +1,248 @@
+.note-practice {
+  margin: 48px 0;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #1b1e1b;
+  min-width: 0;
+}
+.notes-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.notes-heading h2 {
+  margin: 6px 0 10px;
+  font-size: 27px;
+}
+.notes-heading p {
+  color: var(--muted);
+}
+.notes-heading .notes-eyebrow {
+  color: var(--amber);
+  font-size: 11px;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+.note-listen {
+  min-height: 44px;
+  flex-shrink: 0;
+}
+.note-controls {
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.note-controls label {
+  font-size: 13px;
+  color: var(--muted);
+}
+.note-controls select {
+  background: #252a25;
+  color: #eeeee9;
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  border-radius: 8px;
+  min-height: 44px;
+  max-width: 100%;
+}
+.note-controls button {
+  min-height: 44px;
+}
+.notes-explanation {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.notes-error {
+  color: #f5b3a7;
+}
+.note-cues {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 22px 0;
+}
+.note-cue {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #222722;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.note-cue > span {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+.note-cue strong {
+  font-size: 32px;
+  letter-spacing: -1px;
+}
+.note-cue small {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.note-cue.current {
+  border-color: var(--amber);
+}
+.note-cue.current strong {
+  color: var(--amber);
+}
+.note-cue.heard strong {
+  color: #a3d6a9;
+}
+.neck-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 4px 2px 12px;
+  scrollbar-color: #596453 #1b1e1b;
+}
+.guitar-neck {
+  width: 820px;
+}
+.neck-frets,
+.neck-string {
+  display: grid;
+  grid-template-columns: 66px repeat(13, 58px);
+}
+.neck-frets {
+  height: 43px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+.neck-frets > span {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+.neck-frets small {
+  color: var(--amber);
+  font-size: 12px;
+}
+.neck-string {
+  position: relative;
+}
+.neck-string::before {
+  content: "";
+  height: 1px;
+  background: #777663;
+  position: absolute;
+  left: 66px;
+  right: 0;
+  top: 50%;
+  pointer-events: none;
+}
+.neck-string:nth-child(6)::before,
+.neck-string:nth-child(7)::before {
+  height: 2px;
+}
+.neck-string-name {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  color: #d3d6cb;
+  font-size: 13px;
+}
+.neck-string-name small {
+  font-size: 10px;
+  color: var(--muted);
+}
+button.neck-note {
+  position: relative;
+  min-height: 46px;
+  padding: 0;
+  border: 0;
+  border-right: 2px solid #51574b;
+  border-radius: 0;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 500;
+}
+button.neck-note:first-of-type {
+  border-right: 4px solid #b0b4a4;
+}
+.neck-note span {
+  min-width: 36px;
+  padding: 5px 3px;
+  border-radius: 50%;
+  background: #242a24;
+  color: #b6bcb2;
+}
+button.neck-note:hover {
+  background: #30372d;
+}
+.neck-note.is-heard span {
+  background: #a3d6a9;
+  color: #132519;
+  font-weight: 700;
+}
+.neck-note.is-target span {
+  background: var(--amber);
+  color: #2c2215;
+  font-weight: 700;
+}
+.neck-note.is-target.is-heard span {
+  outline: 3px solid #a3d6a9;
+  outline-offset: 2px;
+}
+button.neck-note:focus-visible {
+  z-index: 1;
+  outline-offset: -2px;
+}
+.neck-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+}
+.legend-target {
+  color: var(--amber);
+}
+.legend-heard {
+  color: #a3d6a9;
+}
+@media (max-width: 650px) {
+  .note-practice {
+    padding: 18px;
+    margin: 30px 0;
+  }
+  .notes-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .notes-heading h2 {
+    font-size: 23px;
+  }
+  .note-cues {
+    gap: 8px;
+  }
+  .note-cue {
+    padding: 13px 10px;
+    gap: 8px;
+  }
+  .note-cue strong {
+    font-size: 23px;
+  }
+  .note-cue small {
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .note-practice button {
+    transition: none;
+  }
+}

@@ -32,6 +32,7 @@ import {
 import { ChordDiagram } from "./components/ChordDiagram";
 import { useAudio } from "./hooks/useAudio";
 import { useTransport } from "./hooks/useTransport";
+import { NotePractice } from "./components/NotePractice";
 const STORAGE_KEY = "guitarflow.pattern.v1";
 function restore(): StrumPattern {
   try {
@@ -116,6 +117,7 @@ export default function App() {
     });
   };
   const replay = async () => {
+    audio.stop();
     stopPreview();
     try {
       const ctx = new AudioContext();
@@ -175,6 +177,7 @@ export default function App() {
         </a>
         <nav aria-label="Main navigation">
           <a href="#practice">Practice</a>
+          <a href="#notes">Single notes</a>
           <a href="#rhythm">Your rhythm</a>
           <a href="#library">Library</a>
         </nav>
@@ -202,6 +205,24 @@ export default function App() {
             </div>
           </div>
         </div>
+        <NotePractice
+          estimate={audio.noteEstimate}
+          listening={audio.listening && audio.listeningMode === "notes"}
+          pending={audio.requesting && audio.listeningMode === "notes"}
+          busy={
+            audio.recording ||
+            audio.analyzing ||
+            previewing ||
+            (audio.requesting && audio.listeningMode !== "notes")
+          }
+          error={audio.errorMode === "notes" ? audio.error : ""}
+          onListen={() => {
+            transport.reset();
+            stopPreview();
+            void audio.mic(bpm, "notes");
+          }}
+          onStop={audio.stop}
+        />
         <section
           id="practice"
           className="practice panel"
@@ -376,17 +397,20 @@ export default function App() {
           <div className="listen-row">
             <button
               className="quiet-button"
-              disabled={audio.recording || audio.analyzing}
+              disabled={audio.recording || audio.analyzing || audio.requesting}
               onClick={() => {
-                if (audio.listening) audio.stop();
+                if (audio.listening && audio.listeningMode === "chords")
+                  audio.stop();
                 else void audio.mic(bpm, "listen");
               }}
             >
               <Mic size={15} />
-              {audio.listening ? "Stop listening" : "Listen to my chords"}
+              {audio.listening && audio.listeningMode === "chords"
+                ? "Stop listening"
+                : "Listen to my chords"}
             </button>
             <span>
-              {audio.listening
+              {audio.listening && audio.listeningMode === "chords"
                 ? audio.estimate?.chord
                   ? `Heard ${audio.estimate.chord} · ${Math.round(audio.estimate.confidence * 100)}% confidence${audio.estimate.chord === position.current.chord ? " · Matches current chord" : ""}`
                   : "Listening · chord unclear"
@@ -481,7 +505,7 @@ export default function App() {
                 {audio.status}
               </p>
             )}
-            {audio.error && (
+            {audio.error && audio.errorMode !== "notes" && (
               <p role="alert" className="error">
                 {audio.error}
               </p>
