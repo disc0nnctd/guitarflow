@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -33,6 +33,8 @@ import { ChordDiagram } from "./components/ChordDiagram";
 import { useAudio } from "./hooks/useAudio";
 import { useTransport } from "./hooks/useTransport";
 import { NotePractice } from "./components/NotePractice";
+import { ChordLearning } from "./components/ChordLearning";
+import { buildSongNoteExercise } from "./core/note-practice";
 const STORAGE_KEY = "guitarflow.pattern.v1";
 function restore(): StrumPattern {
   try {
@@ -61,11 +63,16 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(ARRANGEMENTS[0].id);
   const [libraryQuery, setLibraryQuery] = useState("");
   const [libraryKind, setLibraryKind] = useState("all");
+  const [songRequest, setSongRequest] = useState(0);
   const [loop, setLoop] = useState(true);
   const [muted, setMuted] = useState(false);
   const audio = useAudio();
   const selected =
     ARRANGEMENTS.find((a) => a.id === selectedId) ?? ARRANGEMENTS[0];
+  const songExercise = useMemo(
+    () => (selected.song ? buildSongNoteExercise(selected) : null),
+    [selected],
+  );
   const compatible = getCompatibleArrangements(pattern, known);
   const visibleArrangements = compatible.filter((arrangement) => {
     const matchesKind =
@@ -190,6 +197,7 @@ export default function App() {
         <nav aria-label="Main navigation">
           <a href="#practice">Practice</a>
           <a href="#notes">Single notes</a>
+          <a href="#learn-chords">Learn chords</a>
           <a href="#rhythm">Your rhythm</a>
           <a href="#library">Library</a>
         </nav>
@@ -218,6 +226,8 @@ export default function App() {
           </div>
         </div>
         <NotePractice
+          songExercise={songExercise}
+          songRequest={songRequest}
           estimate={audio.noteEstimate}
           listening={audio.listening && audio.listeningMode === "notes"}
           pending={audio.requesting && audio.listeningMode === "notes"}
@@ -329,6 +339,29 @@ export default function App() {
               >
                 Open song lesson (new tab)
               </a>
+              <div className="song-learning-actions">
+                <button
+                  onClick={() => {
+                    transport.reset();
+                    audio.stop();
+                    stopPreview();
+                    setSongRequest((request) => request + 1);
+                    window.location.hash = "notes";
+                  }}
+                >
+                  Learn fingerstyle
+                </button>
+                <button
+                  onClick={() => {
+                    transport.reset();
+                    audio.stop();
+                    stopPreview();
+                    window.location.hash = "learn-chords";
+                  }}
+                >
+                  Learn song chords
+                </button>
+              </div>
             </div>
           )}
           <div className="progression" aria-label="Chord progression">
@@ -453,6 +486,26 @@ export default function App() {
             </p>
           )}
         </section>
+        <ChordLearning
+          key={selected.id}
+          arrangement={selected}
+          estimate={audio.estimate}
+          listening={audio.listening && audio.listeningMode === "lesson"}
+          pending={audio.requesting && audio.listeningMode === "lesson"}
+          busy={
+            audio.recording ||
+            audio.analyzing ||
+            previewing ||
+            (audio.requesting && audio.listeningMode !== "lesson")
+          }
+          error={audio.errorMode === "learn-chords" ? audio.error : ""}
+          onListen={() => {
+            transport.reset();
+            stopPreview();
+            void audio.mic(bpm, "learn-chords");
+          }}
+          onStop={audio.stop}
+        />
         <div className="lower-grid">
           <section
             id="rhythm"
@@ -535,11 +588,13 @@ export default function App() {
                 {audio.status}
               </p>
             )}
-            {audio.error && audio.errorMode !== "notes" && (
-              <p role="alert" className="error">
-                {audio.error}
-              </p>
-            )}
+            {audio.error &&
+              audio.errorMode !== "notes" &&
+              audio.errorMode !== "learn-chords" && (
+                <p role="alert" className="error">
+                  {audio.error}
+                </p>
+              )}
             <div className="pattern-heading">
               <label htmlFor="preset">Pattern</label>
               <select

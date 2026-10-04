@@ -13,15 +13,15 @@ export function useAudio() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [errorMode, setErrorMode] = useState<
-    "record" | "listen" | "notes" | "upload" | null
+    "record" | "listen" | "notes" | "learn-chords" | "upload" | null
   >(null);
   const [result, setResult] = useState<RhythmAnalysis | null>(null);
   const [listening, setListening] = useState(false);
   const [estimate, setEstimate] = useState<ChordEstimate | null>(null);
   const [noteEstimate, setNoteEstimate] = useState<PitchEstimate | null>(null);
-  const [listeningMode, setListeningMode] = useState<"chords" | "notes" | null>(
-    null,
-  );
+  const [listeningMode, setListeningMode] = useState<
+    "chords" | "notes" | "lesson" | null
+  >(null);
   const [requesting, setRequesting] = useState(false);
   const cleanup = useRef<(() => void) | null>(null);
   const token = useRef(0);
@@ -52,7 +52,10 @@ export function useAudio() {
     },
     [],
   );
-  const mic = async (bpm: number, mode: "record" | "listen" | "notes") => {
+  const mic = async (
+    bpm: number,
+    mode: "record" | "listen" | "notes" | "learn-chords",
+  ) => {
     clear();
     const session = token.current;
     let ctx: AudioContext | null = null;
@@ -61,7 +64,13 @@ export function useAudio() {
     setRecording(mode === "record");
     setRequesting(true);
     setListeningMode(
-      mode === "notes" ? "notes" : mode === "listen" ? "chords" : null,
+      mode === "notes"
+        ? "notes"
+        : mode === "listen"
+          ? "chords"
+          : mode === "learn-chords"
+            ? "lesson"
+            : null,
     );
     try {
       if (!navigator.mediaDevices?.getUserMedia)
@@ -100,7 +109,7 @@ export function useAudio() {
         stream?.getTracks().forEach((t) => t.stop());
         closeAudioContext(context);
       };
-      if (mode === "listen" || mode === "notes") {
+      if (mode === "listen" || mode === "notes" || mode === "learn-chords") {
         const analyser = context.createAnalyser();
         analyser.fftSize = Math.min(
           32768,

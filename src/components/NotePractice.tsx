@@ -5,6 +5,7 @@ import {
   createNoteTracker,
   NOTE_EXERCISES,
   updateNoteTracker,
+  type NoteExercise,
 } from "../core/note-practice";
 import { GuitarNeck } from "./GuitarNeck";
 import "./notes.css";
@@ -17,6 +18,8 @@ interface NotePracticeProps {
   error: string;
   onListen: () => void;
   onStop: () => void;
+  songExercise?: NoteExercise | null;
+  songRequest?: number;
 }
 export function NotePractice({
   estimate,
@@ -26,6 +29,8 @@ export function NotePractice({
   error,
   onListen,
   onStop,
+  songExercise,
+  songRequest,
 }: NotePracticeProps) {
   const [exerciseId, setExerciseId] = useState(NOTE_EXERCISES[0].id);
   const [selectedMidi, setSelectedMidi] = useState<number | null>(null);
@@ -33,11 +38,48 @@ export function NotePractice({
   const tracker = useRef(createNoteTracker());
   const blockedEstimate = useRef(estimate);
   const wasListening = useRef(false);
-  const exercise = NOTE_EXERCISES.find((entry) => entry.id === exerciseId)!;
+  const exercise =
+    (songExercise?.id === exerciseId ? songExercise : null) ??
+    NOTE_EXERCISES.find((entry) => entry.id === exerciseId) ??
+    NOTE_EXERCISES[0];
   const notes = selectedMidi === null ? exercise.notes : [selectedMidi];
   const complete = index >= notes.length;
   const targetMidi = complete ? null : notes[index];
   const nextMidi = notes[index + 1] ?? null;
+  const targetStep =
+    selectedMidi === null ? exercise.steps?.[index] : undefined;
+  const latestEstimate = useRef(estimate);
+  latestEstimate.current = estimate;
+  const previousSong = useRef(songExercise);
+  const previousRequest = useRef(songRequest);
+  const sequenceRegion = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const region = sequenceRegion.current;
+    const active = region?.querySelector<HTMLButtonElement>(
+      '[aria-current="step"]',
+    );
+    if (!region || !active) return;
+    const regionBounds = region.getBoundingClientRect();
+    const activeBounds = active.getBoundingClientRect();
+    if (activeBounds.left < regionBounds.left)
+      region.scrollLeft += activeBounds.left - regionBounds.left - 2;
+    else if (activeBounds.right > regionBounds.right)
+      region.scrollLeft += activeBounds.right - regionBounds.right + 2;
+  }, [index, exerciseId, selectedMidi]);
+  useEffect(() => {
+    const requested = songRequest !== previousRequest.current;
+    const changed = songExercise !== previousSong.current;
+    const wasSongSelected =
+      selectedMidi === null && previousSong.current?.id === exerciseId;
+    previousRequest.current = songRequest;
+    previousSong.current = songExercise;
+    if (!requested && !(changed && wasSongSelected)) return;
+    setExerciseId(songExercise?.id ?? NOTE_EXERCISES[0].id);
+    setSelectedMidi(null);
+    setIndex(0);
+    tracker.current = createNoteTracker();
+    blockedEstimate.current = latestEstimate.current;
+  }, [songExercise, songRequest, exerciseId, selectedMidi]);
   const reset = () => {
     setIndex(0);
     tracker.current = createNoteTracker();
@@ -129,6 +171,11 @@ export function NotePractice({
               {entry.name}
             </option>
           ))}
+          {songExercise && (
+            <optgroup label="Selected song">
+              <option value={songExercise.id}>{songExercise.name}</option>
+            </optgroup>
+          )}
           {selectedMidi !== null && (
             <option value="single">
               Selected note: {midiLabel(selectedMidi)}
@@ -154,6 +201,14 @@ export function NotePractice({
               ? "Restart or choose another exercise"
               : `Note ${index + 1} of ${notes.length}`}
           </small>
+          {targetStep && (
+            <small className="note-fingering">
+              {targetStep.chord} chord · String {targetStep.string} ·{" "}
+              {targetStep.fret === 0 ? "Open" : `Fret ${targetStep.fret}`}
+              <br />
+              Pick with {targetStep.finger}
+            </small>
+          )}
         </div>
         <div className="note-cue">
           <span>UP NEXT</span>
@@ -174,9 +229,56 @@ export function NotePractice({
         Hold the correct note briefly to advance. Mute briefly between repeated
         notes. Match the octave as well as the note.
       </p>
+      {exercise.songId && selectedMidi === null && (
+        <p className="notes-explanation">
+          An original fingerpicking exercise over this song’s simplified chord
+          loop. Mute the other strings and pick one note at a time; this is not
+          the song’s signature melody.
+        </p>
+      )}
+      <div
+        ref={sequenceRegion}
+        className="note-sequence-scroll"
+        role="region"
+        aria-label="Note sequence"
+        tabIndex={0}
+      >
+        <ol className="note-sequence">
+          {notes.map((midi, stepIndex) => {
+            const step =
+              selectedMidi === null ? exercise.steps?.[stepIndex] : undefined;
+            return (
+              <li key={stepIndex}>
+                <button
+                  type="button"
+                  aria-current={stepIndex === index ? "step" : undefined}
+                  aria-label={`Practise from note ${stepIndex + 1}: ${midiLabel(midi)}${step ? `, ${step.chord} chord, string ${step.string}, ${step.fret === 0 ? "open string" : `fret ${step.fret}`}, pick with ${step.finger}` : ""}`}
+                  onClick={() => {
+                    setIndex(stepIndex);
+                    tracker.current = createNoteTracker();
+                    blockedEstimate.current = estimate;
+                  }}
+                >
+                  <span className="sequence-number">{stepIndex + 1}</span>
+                  <strong>{midiLabel(midi)}</strong>
+                  {step && (
+                    <small>
+                      {step.chord} · S{step.string} ·{" "}
+                      {step.fret === 0 ? "Open" : `F${step.fret}`}
+                      <br />
+                      {step.finger}
+                    </small>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
       <GuitarNeck
         targetMidi={targetMidi}
         heardMidi={heardMidi}
+        targetPosition={targetStep}
         onSelect={(midi) => {
           setSelectedMidi(midi);
           reset();
@@ -185,6 +287,9 @@ export function NotePractice({
       <p className="neck-legend">
         <span className="legend-target">● Target note</span>
         <span className="legend-heard">● Heard note</span>
+        {targetStep && (
+          <span className="legend-suggested">◎ Suggested fingering</span>
+        )}
         <span>Click a fret to practise its note.</span>
       </p>
       <p className="notes-explanation">

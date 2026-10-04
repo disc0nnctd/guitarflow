@@ -688,6 +688,15 @@ h2 {
 .song-details strong {
   color: #eeeee9;
 }
+.song-learning-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+.song-learning-actions button {
+  min-height: 44px;
+}
 .song-details a {
   display: inline-flex;
   align-items: center;

@@ -1,0 +1,136 @@
+.chord-learning {
+  margin: 28px 0;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #1b1f1c;
+  min-width: 0;
+}
+.chord-lesson-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.chord-lesson-heading h2 {
+  margin: 8px 0;
+  font-size: 25px;
+}
+.chord-lesson-heading p {
+  color: var(--muted);
+  font-size: 14px;
+}
+.chord-lesson-heading .chord-lesson-eyebrow {
+  color: var(--amber);
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+.chord-learning button {
+  min-height: 44px;
+}
+.chord-lesson-heading button {
+  flex-shrink: 0;
+}
+.chord-lesson-cues {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 22px 0;
+}
+.chord-lesson-cue {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+.chord-lesson-cue.current {
+  background: #29271f;
+  border-color: #79623f;
+}
+.chord-lesson-cue span {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.chord-lesson-cue strong {
+  font-size: 38px;
+  line-height: 1.15;
+}
+.chord-lesson-cue.current strong {
+  color: var(--amber);
+}
+.chord-lesson-cue.heard strong {
+  color: #a9d9b2;
+}
+.chord-lesson-cue small,
+.chord-lesson-help {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.chord-lesson-cue .chord-diagram {
+  width: 130px;
+  max-width: 100%;
+  height: auto;
+}
+.chord-lesson-error {
+  color: #f2abab;
+}
+.chord-lesson-sequence-scroll {
+  margin-top: 18px;
+  overflow-x: auto;
+  max-width: 100%;
+  padding-bottom: 8px;
+}
+.chord-lesson-sequence {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: max-content;
+}
+.chord-lesson-sequence button {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 88px;
+}
+.chord-lesson-sequence button[aria-current="step"] {
+  border-color: var(--amber);
+  background: #3a3123;
+}
+.chord-lesson-sequence span,
+.chord-lesson-sequence small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.chord-lesson-sequence strong {
+  font-size: 21px;
+}
+@media (max-width: 640px) {
+  .chord-learning {
+    padding: 18px;
+  }
+  .chord-lesson-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .chord-lesson-cues {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .chord-lesson-cue {
+    padding: 13px;
+  }
+  .chord-lesson-cue.heard {
+    grid-column: 1 / -1;
+  }
+  .chord-lesson-cue strong {
+    font-size: 30px;
+  }
+}

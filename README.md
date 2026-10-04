@@ -71,6 +71,19 @@ or artist, choose **Popular songs**, and select a loop. Artist and lesson links
 appear beside the selected song's adaptation notes. See the
 [song catalog](docs/acoustic-songs.md) for the included titles and sources.
 
+Select a song, then choose **Learn fingerstyle** to practise its accompaniment
+note sequence. Each step shows the chord, string, fret and picking finger;
+the neck marks a suggested position. Play the expected note to advance, or
+click a sequence step to start there. These are original picking exercises
+over the simplified song chords. For microphone checking, mute other strings
+and play one note at a time.
+
+Choose **Learn song chords**, then **Listen for chord changes**, to practise
+at your own pace. This lesson waits for a stable expected chord before showing
+the next one. Strum the unmuted strings and mute briefly between repeated
+chords. Chord matching is experimental. The existing **Start practice** button
+still provides a separate fixed-tempo rhythm session.
+
 Saved patterns stay in this browser's local storage. Raw microphone/upload
 audio is used in memory and is not sent to a server. Clearing browser storage
 removes saved patterns.
@@ -93,7 +106,8 @@ removes saved patterns.
   the bar start. Review the grid if your pattern starts with a rest or pickup.
 - Chord listening is experimental note-energy matching for a small open-chord
   vocabulary. It can return unknown, especially for noise and partial chords;
-  it does not determine when the arrangement advances.
+  it does not determine when fixed-tempo practice advances. The separate chord
+  lesson uses stable matching to advance its cue at your pace.
 - The library combines original exercises with short, simplified popular-song
   chord loops. Equal-length practice bars are not complete song arrangements
   or recording-synchronized charts. Song-specific notes explain omitted riffs,

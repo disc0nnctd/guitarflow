@@ -26,10 +26,14 @@ current entries; some are transposed or use simpler voicings than the recording.
 The displayed key describes this app's adaptation. Tempo remains under the
 player's control and the chosen strumming pattern supplies the rhythm guide.
 
-Song cues retain the existing fixed-tempo behavior. Hearing a chord does not
-advance a song cue; detection-driven advancement remains specific to single-note
-exercises. Full song structures, signature picking patterns, capo-aware chord
-recognition and synchronization to recordings are separate future features.
+Start practice retains fixed-tempo behavior. Learn song chords offers a separate
+self-paced lesson that advances only after the expected chord matches for at
+least 600 ms. Learn fingerstyle creates an original eight-note accompaniment
+pattern per teaching bar from that chord's standard fingering, with bass,
+string/fret and picking-finger guidance. The single-note detector advances each
+note after a stable match; mute other strings while checking individual notes.
+Full song structures, signature melodies/picking patterns, capo-aware chord
+recognition and synchronization to recordings remain separate features.
 
 Search matches title or artist without case sensitivity. The library filter
 switches between songs, originals and both. Known-chord filtering applies to

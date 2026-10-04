@@ -4,11 +4,13 @@ interface GuitarNeckProps {
   targetMidi: number | null;
   heardMidi: number | null;
   onSelect: (midi: number) => void;
+  targetPosition?: { string: number; fret: number };
 }
 export function GuitarNeck({
   targetMidi,
   heardMidi,
   onSelect,
+  targetPosition,
 }: GuitarNeckProps) {
   return (
     <div
@@ -45,12 +47,16 @@ export function GuitarNeck({
               const midi = getFretMidi(string.number, fret);
               const target = midi === targetMidi;
               const heard = midi === heardMidi;
+              const suggested =
+                target &&
+                targetPosition?.string === string.number &&
+                targetPosition.fret === fret;
               return (
                 <button
                   type="button"
                   key={fret}
-                  className={`neck-note${target ? " is-target" : ""}${heard ? " is-heard" : ""}`}
-                  aria-label={`${midiLabel(midi)}, string ${string.number}, ${fret === 0 ? "open string" : `fret ${fret}`}`}
+                  className={`neck-note${target ? " is-target" : ""}${heard ? " is-heard" : ""}${suggested ? " is-suggested" : ""}`}
+                  aria-label={`${midiLabel(midi)}, string ${string.number}, ${fret === 0 ? "open string" : `fret ${fret}`}${suggested ? ", suggested fingering" : ""}`}
                   aria-pressed={target}
                   onClick={() => onSelect(midi)}
                 >

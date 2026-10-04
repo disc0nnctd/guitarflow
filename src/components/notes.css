@@ -96,6 +96,56 @@
 .note-cue.current strong {
   color: var(--amber);
 }
+.note-cue .note-fingering {
+  color: #eeeee9;
+}
+.note-sequence-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  margin: 18px 0;
+  padding: 3px 2px 12px;
+  scrollbar-color: #596453 #1b1e1b;
+}
+.note-sequence {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.note-sequence li {
+  flex: 0 0 auto;
+}
+.note-sequence button {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  min-width: 88px;
+  min-height: 64px;
+  padding: 10px 12px;
+  background: #222722;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  text-align: left;
+}
+.note-sequence button[aria-current="step"] {
+  border-color: var(--amber);
+  background: #383021;
+}
+.note-sequence strong {
+  color: #eeeee9;
+}
+.note-sequence button[aria-current="step"] strong {
+  color: var(--amber);
+}
+.note-sequence small,
+.sequence-number {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
 .note-cue.heard strong {
   color: #a3d6a9;
 }
@@ -197,6 +247,11 @@ button.neck-note:hover {
   outline: 3px solid #a3d6a9;
   outline-offset: 2px;
 }
+.neck-note.is-suggested span {
+  box-shadow:
+    0 0 0 2px #1b1e1b,
+    0 0 0 4px #faf0cc;
+}
 button.neck-note:focus-visible {
   z-index: 1;
   outline-offset: -2px;
@@ -213,6 +268,9 @@ button.neck-note:focus-visible {
 }
 .legend-heard {
   color: #a3d6a9;
+}
+.legend-suggested {
+  color: #faf0cc;
 }
 @media (max-width: 650px) {
   .note-practice {
